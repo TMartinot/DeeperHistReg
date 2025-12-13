@@ -11,10 +11,12 @@ pandas
 opencv_contrib_python>=4.7.0.68
 openslide_python>=1.2.0
 Pillow>=9.5.0
+# Note: pyvips may conflict with openslide in the same environment on Windows!
 pyvips>=2.2.1
 scipy>=1.10.1
 SimpleITK>=2.2.1
-torch>=1.13.1
-torchvision>=0.14.1
+# Exclude PyTorch core packages to enable customized CUDA installation
+# >>> torch>=1.13.1
+# >>> torchvision>=0.14.1
 torchsummary
 torchio
