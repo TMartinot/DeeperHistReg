@@ -733,6 +733,21 @@ def default_initial_nonrigid_high_resolution():
     return params
 
 
+def default_initial_nonrigid_high_resolution_jpeg():
+    params: dict = default_initial_nonrigid_high_resolution()
+
+    # Add parameters for saving output TIFF with JPEG compression, overriding default behavior
+    tiff_save_params = dict()
+    tiff_save_params["compression"] = "jpeg"
+    tiff_save_params["Q"] = 90  # JPEG quality
+    tiff_save_params["pyramid"] = True
+    tiff_save_params["bigtiff"] = True
+    tiff_save_params["strip"] = False
+    params["tiff_save_params"] = tiff_save_params
+
+    return params
+
+
 
 
 

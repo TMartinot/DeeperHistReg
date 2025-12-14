@@ -245,9 +245,9 @@ class DeeperHistReg_FullResolution():
         TODO
         """
         save_final_df = self.registration_parameters['save_final_displacement_field']
+        save_params = self.registration_parameters.get('tiff_save_params')
         if save_final_df:
             saver = None
-            save_params = None
             save_name = "Results_Final"
             rs.ResultsSaver(
                             saver,
@@ -275,6 +275,7 @@ class DeeperHistReg_FullResolution():
                 displacement_field_path,
                 loader = loader_mapper[self.registration_parameters['loading_params']['loader']],
                 saver = saver_mapper[self.registration_parameters['saving_params']['final_saver']],
+                save_params = save_params,
                 level = self.registration_parameters['loading_params']['final_level'],
                 pad_value = self.registration_parameters['loading_params']['pad_value'],
                 save_source_only = True,
