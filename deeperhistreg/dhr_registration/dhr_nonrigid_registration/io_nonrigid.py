@@ -1,4 +1,5 @@
 ### Ecosystem Imports ###
+import datetime
 import os
 import sys
 current_file = sys.modules[__name__]
@@ -45,6 +46,7 @@ def instance_optimization_nonrigid_registration(
     if type(regularization_function) == str:
         regularization_function = rg.get_function(regularization_function)
 
+    print(f"TM:Tensor:io_nonrigid:49: {source.shape=}")
     ### Initial Resampling ###
     resampled_source, resampled_target = u.initial_resampling(source, target, resolution)
     if echo:
@@ -55,18 +57,30 @@ def instance_optimization_nonrigid_registration(
     if echo:
         print(f"Initial objective function: {initial_cost_function.item()}")
 
+    print(f"TM:Tensor:io_nonrigid:59: {resampled_source.shape=}")
     ### Nonrigid Registration ###
     if initial_displacement_field is None:
+        print(f"Init displ. field is None")
+        print(f"TM:Tensor:io_nonrigid:62: {resampled_source.shape=}")
         initial_df = None
         displacement_field = io.nonrigid_registration(resampled_source, resampled_target, num_levels, used_levels, iterations, learning_rates, alphas,
             cost_function, regularization_function, cost_function_params, regularization_function_params, initial_displacement_field=initial_df, device=device, echo=echo)
+        print(f"Got displ. field made")
+        print(f"TM:Tensor:io_nonrigid:66: {resampled_source.shape=}")
     else:
+        print(f"Init displ. field is NOT None")
         initial_df = u.resample_displacement_field_to_size(initial_displacement_field, (resampled_source.size(2), resampled_source.size(3)))
+        print(f"Resampled init displ. field")
+        print(f"TM:Tensor:io_nonrigid:70: {resampled_source.shape=}")
         with tc.set_grad_enabled(False):
             warped_source = w.warp_tensor(resampled_source, initial_df, mode='bicubic')
+        print(f"Got init warped source by init displ. field")
+        print(f"TM:Tensor:io_nonrigid:74: {warped_source.shape=}")
         displacement_field = io.nonrigid_registration(warped_source, resampled_target, num_levels, used_levels, iterations, learning_rates, alphas,
             cost_function, regularization_function, cost_function_params, regularization_function_params, initial_displacement_field=None, device=device, echo=echo)
+        print(f"Got new displ. field")
         displacement_field = w.compose_displacement_fields(initial_df, displacement_field)
+        print(f"Composed final displ. field based on init and new field")
 
     if echo:
         print(f"Registered displacement field size: {displacement_field.size()}")
@@ -84,6 +98,7 @@ def instance_optimization_nonrigid_registration_lbfgs(
     """
     TODO
     """
+    print(f"POST PRINT Inside io non-rigid")
     device = params['device']
     echo = params['echo']
     cost_function = params['cost_function']
@@ -114,10 +129,14 @@ def instance_optimization_nonrigid_registration_lbfgs(
 
     ### Nonrigid Registration ###
     if initial_displacement_field is None:
+        if echo:
+            print(f"ECHO - Intitial displacement field is None (datetime: {datetime.datetime.now()})")
         initial_df = None
         displacement_field = io.nonrigid_registration_lbfgs(resampled_source, resampled_target, num_levels, used_levels, iterations, alphas,
             cost_function, regularization_function, cost_function_params, regularization_function_params, initial_displacement_field=initial_df, device=device, echo=echo)
     else:
+        if echo:
+            print(f"ECHO - Intitial displacement field is NOT None (datetime: {datetime.datetime.now()})")
         initial_df = u.resample_displacement_field_to_size(initial_displacement_field, (resampled_source.size(2), resampled_source.size(3)))
         with tc.set_grad_enabled(False):
             warped_source = w.warp_tensor(resampled_source, initial_df, mode='bicubic')

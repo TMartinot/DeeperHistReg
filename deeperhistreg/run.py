@@ -37,16 +37,21 @@ def run_registration(**config):
         os.makedirs(save_path)
 
     ### Run Registration ###
-    try:
-        registration_parameters['logging_path'] = pathlib.Path(save_path) / "logs.txt"
-        registration_parameters['case_name'] = experiment_name
-        pipeline = fr.DeeperHistReg_FullResolution(registration_parameters)
-        pipeline.run_registration(source_path, target_path, save_path)
-    except Exception as e:
-        print(f"Exception: {e}")
+    # >>> try:
+    registration_parameters['logging_path'] = pathlib.Path(save_path) / "logs.txt"
+    registration_parameters['case_name'] = experiment_name
+    pipeline = fr.DeeperHistReg_FullResolution(registration_parameters)
+    pipeline.run_registration(source_path, target_path, save_path)
+    # >>> except Exception as e:
+    # >>>     print(f"Exception: {e}")
 
     ### Copy Outputs and Clean ###
     if registration_parameters['save_final_images']:
+        results_dir = pathlib.Path(save_path) / experiment_name / "Results_Final"
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir)
+        print(pathlib.Path(save_path) / experiment_name / "Results_Final")
+        print([item for item in os.listdir(pathlib.Path(save_path) / experiment_name / "Results_Final")])
         warped_name = [item for item in os.listdir(pathlib.Path(save_path) / experiment_name / "Results_Final") if "warped_source" in item][0]
         shutil.copy(pathlib.Path(save_path) / experiment_name / "Results_Final" / warped_name, pathlib.Path(output_path) / warped_name)
         shutil.copy(pathlib.Path(save_path) / "logs.txt", pathlib.Path(output_path) / "logs.txt")

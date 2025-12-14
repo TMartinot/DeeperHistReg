@@ -63,6 +63,7 @@ def instance_optimization_nonrigid_registration(
     """
     TODO
     """
+    print(f"TM:Tensor:nonrigid_registration_methods:66: {source.shape=}")
     return ion.instance_optimization_nonrigid_registration(source, target, initial_displacement_field, params)
 
 def instance_optimization_nonrigid_registration_lbfgs(
@@ -73,6 +74,7 @@ def instance_optimization_nonrigid_registration_lbfgs(
     """
     TODO
     """
+    print(f"POST PRINT: Inside insatance optimization non-rigid registration")
     return ion.instance_optimization_nonrigid_registration_lbfgs(source, target, initial_displacement_field, params)
 
 def instance_optimization_bsplines_registration(

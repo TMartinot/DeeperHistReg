@@ -72,9 +72,12 @@ class PairFullLoader():
         """
         TODO
         """
+        print(f"TM:LOADER:75: Kind of loaders {self.source_loader=} | {self.target_loader=}")
         source = self.source_loader.resample(source_resample_ratio)
         target = self.target_loader.resample(target_resample_ratio)
+        print(f"TM:LOADER:77: After resample loading {source.shape=} | {target.shape=}")
         padded_source, padded_target, padding_params = self.pad_to_same_shape(source, target, pad_value)
+        print(f"TM:LOADER:80: After padding {padded_source.shape=} | {padded_target.shape=}")
         return padded_source, padded_target, padding_params
     
     def load_image(

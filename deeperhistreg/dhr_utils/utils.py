@@ -67,6 +67,7 @@ def resample_tensor_to_size(tensor: tc.Tensor, new_size: tc.Tensor, mode: str='b
     """
     TODO
     """
+    print(f"TM:DEBUG:UTILS:70: {type(new_size)=}")
     return F.interpolate(tensor, size=new_size, mode=mode, align_corners=False)
 
 def resample_displacement_field(displacement_field : tc.Tensor, resample_ratio : float, mode: str="bilinear") -> tc.Tensor:
@@ -87,6 +88,7 @@ def gaussian_smoothing(tensor : tc.Tensor, sigma : float) -> tc.Tensor:
     """
     with tc.set_grad_enabled(False):
         kernel_size = int(sigma * 2.54) + 1 if int(sigma * 2.54) % 2 == 0 else int(sigma * 2.54)
+        print(f"TM:01: GB Kernel size: {kernel_size}, tensor shape: {tensor.shape}")
         return tr.GaussianBlur(kernel_size, sigma)(tensor)
 
 def gaussian_smoothing_np(image : np.ndarray, sigma : float) -> np.ndarray:
@@ -451,15 +453,20 @@ def create_pyramid(tensor: tc.Tensor, num_levels: int, mode: str='bilinear') -> 
         The created resolution pyramid
 
     """
+    print(f"TM:02.3: {num_levels=}")
     pyramid = [None]*num_levels
     for i in range(num_levels - 1, -1, -1):
         if i == num_levels - 1:
             pyramid[i] = tensor
+            print(f"TM:02.if: {i=}, pyramid[i] <= tensor")
         else:
             current_size = pyramid[i+1].size()
             new_size = (int(current_size[j] / 2) if j > 1 else current_size[j] for j in range(len(current_size)))
             new_size = tc.Size(new_size)[2:]
+            # >>> print(f"TM:02.2: {pyramid=}")
+            print(f"TM:02: Params | pyramid size {current_size=}, {new_size=}, {mode=}")
             new_tensor = resample_tensor_to_size(gaussian_smoothing(pyramid[i+1], 1), new_size, mode=mode)
+            print(f"TM:02: Got new tensor")
             pyramid[i] = new_tensor
     return pyramid
 

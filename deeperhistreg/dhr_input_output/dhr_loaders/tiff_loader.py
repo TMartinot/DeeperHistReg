@@ -79,16 +79,58 @@ class TIFFLoader(WSILoader):
         resample_ratio =  (original_resolution[0] * resample_ratio) / updated_resolution[0]
         return resample_ratio
 
+    @staticmethod
+    def pad_to_even(image: pyvips.Image, pad_value=0) -> pyvips.Image:
+        w, h = image.width, image.height
+        pad_w = w % 2
+        pad_h = h % 2
+        if pad_w or pad_h:
+            image = image.embed(0, 0, w + pad_w, h + pad_h, background=pad_value)
+        return image
+
+    @staticmethod
+    def pad_to_even_extra(image: pyvips.Image, pad_value=0, extra_h=0) -> pyvips.Image:
+        w, h = image.width, image.height
+
+        # Ensure even dimensions
+        pad_w = w % 2
+        pad_h = h % 2
+
+        new_w = w + pad_w
+        new_h = h + pad_h + extra_h  # <-- add extra padding to height
+
+        if new_w != w or new_h != h:
+            image = image.embed(0, 0, new_w, new_h, background=pad_value)
+
+        return image
+
+    @staticmethod
+    def pad_extra(image: pyvips.Image, pad_value=0, extra_h=0) -> pyvips.Image:
+        w, h = image.width, image.height
+
+        new_w = w
+        new_h = h + extra_h  # <-- add extra padding to height
+
+        if new_w != w or new_h != h:
+            image = image.embed(0, 0, new_w, new_h, background=pad_value)
+
+        return image
+
     def resample(self, resample_ratio : float) -> Union[np.ndarray, tc.Tensor]:
         """
         TODO - documentation
         """
         image, level_to_use = self.get_best_level(resample_ratio)
+        print(f"TM:LOADER:RESAMPLE:87: image at best level {image.width=} | {image.height=} | {image.bands=}")
         if level_to_use > 0:
             resample_ratio = self.update_resample_ratio(resample_ratio, level_to_use)
         sigma = u.calculate_smoothing_sigma(resample_ratio)
         smoothed_image = image.gaussblur(sigma)
+        print(f"TM:LOADER:RESAMPLE:92: smoothed image {smoothed_image.width=} | {smoothed_image.height=} | {smoothed_image.bands=}")
         resampled_image = smoothed_image.resize(resample_ratio, kernel='linear', vscale=resample_ratio)
+        print(f"TM:LOADER:RESAMPLE:103: resampled image (pre-fix) {resampled_image.width=} | {resampled_image.height=} | {resampled_image.bands=}")
+        resampled_image = self.pad_to_even_extra(resampled_image, 255, extra_h=0)   # FIXME TM: HARD-CODED PAD VALUE
+        print(f"TM:LOADER:RESAMPLE:105: resampled image (pre-fix) {resampled_image.width=} | {resampled_image.height=} | {resampled_image.bands=}")
         if self.mode == LoadMode.NUMPY:
             array = resampled_image.numpy()
         elif self.mode == LoadMode.PYTORCH:
@@ -97,6 +139,7 @@ class TIFFLoader(WSILoader):
             array = resampled_image
         else:
             raise ValueError("Unsupported mode.")
+        print(f"TM:LOADER:RESAMPLE:113: Final array {array.shape=}")
         return array
 
     def load_region(self, level : int, offset : tuple, shape : tuple) -> Union[np.ndarray, tc.Tensor]:

@@ -7,6 +7,7 @@ from typing import Iterable
 import logging
 import time
 import pathlib
+import datetime
 
 ### External Imports ###
 import numpy as np
@@ -79,11 +80,13 @@ class DeeperHistReg_FullResolution():
         self.source, self.target, self.padding_params = pair_loader.load_array(source_resample_ratio=source_resample_ratio,
                                                                                 target_resample_ratio=target_resample_ratio,
                                                                                 pad_value=pad_value)
+        print(f"TM:Original:full_resolution: Original shapes: {self.source.shape=} | {self.source.shape=}")
         self.padding_params['source_resample_ratio'] = source_resample_ratio
         self.padding_params['target_resample_ratio'] = target_resample_ratio
         
         e_t = time.time()
         self.org_source, self.org_target = self.source.to(tc.float32).to(self.device), self.target.to(tc.float32).to(self.device)
+        print(f"TM:Original:full_resolution: Original shapes: {self.org_source.shape=} | {self.org_target.shape=}\n{self.logging_path=}, {self.logger=}")
         if self.logging_path is not None:
             self.logger.info(f"Image loading finished.")
             self.logger.info(f"Source shape: {self.source.shape}")
@@ -99,6 +102,14 @@ class DeeperHistReg_FullResolution():
             self.preprocessing_params = self.registration_parameters['preprocessing_params']
             preprocessing_function = pre.get_function(self.preprocessing_params['preprocessing_function'])
             self.pre_source, self.pre_target, _, _, self.postprocessing_params = preprocessing_function(self.org_source, self.org_target, None, None, self.preprocessing_params)
+            tm_line = 103
+            try:
+                print(f"TM:Tensor:full_resolution:{tm_line}: {self.pre_source.shape=} | {self.pre_target.shape=}")
+            except AttributeError as ae:
+                print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+            except Exception as e:
+                print(f"TM:Tensor:full_resolution:err: {e}")
+                print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.pre_source)} | {type(self.pre_target)}")
             e_t = time.time()
             self.preprocessing_time = e_t - b_t
             self.padding_params['initial_resampling'] = self.postprocessing_params['initial_resampling']
@@ -183,9 +194,12 @@ class DeeperHistReg_FullResolution():
         TODO
         """
         if self.registration_parameters['run_nonrigid_registration']:
+            print(f"LOG - DHR - FullRes - Start run non-rigid registration at {datetime.datetime.now()}")
             b_t = time.time()
             nonrigid_registration_params = self.registration_parameters['nonrigid_registration_params']
             nonrigid_registration_function = nr.get_function(nonrigid_registration_params['nonrigid_registration_function'])
+            print(f"LOG - DHR - FullRes - Got non-rigid registration function {nonrigid_registration_params['nonrigid_registration_function']} at {datetime.datetime.now()}")
+            print(f"TM:Tensor:full_resolution:192: {self.pre_source.shape=} | {self.pre_target.shape=}")
             self.nonrigid_displacement_field = nonrigid_registration_function(self.pre_source, self.pre_target, self.current_displacement_field, nonrigid_registration_params)
             e_t = time.time()
             self.nonrigid_registration_time = e_t - b_t
@@ -194,6 +208,7 @@ class DeeperHistReg_FullResolution():
                 self.logger.info(f"Nonrigid registration time: {self.nonrigid_registration_time} seconds.")
             self.current_displacement_field = self.nonrigid_displacement_field
             tc.cuda.empty_cache()
+            print(f"LOG - DHR - FullRes - Finished run non-rigid registration at {datetime.datetime.now()}")
 
     def save_nonrigid_registration(self) -> None:
         """
@@ -267,6 +282,7 @@ class DeeperHistReg_FullResolution():
 
         save_final = self.registration_parameters['save_final_images']
         if save_final and save_final_df:
+            print(f"LOG - DHR - FullRes - SaveFinal: start to apply deformation with pyvips at {datetime.datetime.now()}")
             displacement_field_path = pathlib.Path(self.save_path) / self.case_name / save_name / "displacement_field.mha"
             adf.apply_deformation_pyvips(
                 self.source_path,
@@ -280,6 +296,7 @@ class DeeperHistReg_FullResolution():
                 pad_value = self.registration_parameters['loading_params']['pad_value'],
                 save_source_only = True,
                 to_template_shape = True)
+            print(f"LOG - DHR - FullRes - SaveFinal: finished application deformation with pyvips at {datetime.datetime.now()}")
             if self.logging_path is not None:
                 self.logger.info(f"Final images saved.")
 
@@ -293,12 +310,83 @@ class DeeperHistReg_FullResolution():
         """
         self.source_path, self.target_path, self.save_path = source_path, target_path, save_path
         b_t = time.time()
+        print(f"LOG - DHR - FullRes - Self-logging-path: {self.logging_path} (logger: {self.logger}) (timestamp: {datetime.datetime.now()})")
         self.load_images()
+        tm_line = 305
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.org_source.shape=} | {self.org_target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.org_source)} | {type(self.org_target)}")
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.pre_source.shape=} | {self.pre_target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.pre_source)} | {type(self.pre_target)}")
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.source.shape=} | {self.target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.source)} | {type(self.target)}")
         self.preprocessing()
+        print(f"LOG - DHR - FullRes - Preprocessing done at {datetime.datetime.now()}")
+        tm_line = 318
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.pre_source.shape=} | {self.pre_target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.pre_source)} | {type(self.pre_target)}")
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.source.shape=} | {self.target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.source)} | {type(self.target)}")
+        exit(213)
         self.initial_registration()
+        print(f"LOG - DHR - FullRes - Initial registration done at {datetime.datetime.now()}")
+        tm_line = 331
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.pre_source.shape=} | {self.pre_target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.pre_source)} | {type(self.pre_target)}")
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.source.shape=} | {self.target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.source)} | {type(self.target)}")
         self.nonrigid_registration()
+        print(f"LOG - DHR - FullRes - Non-rigid registration done at {datetime.datetime.now()}")
+        tm_line = 344
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.pre_source.shape=} | {self.pre_target.shape=}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.pre_source)} | {type(self.pre_target)}")
+        try:
+            print(f"TM:Tensor:full_resolution:{tm_line}: {self.source.shape=} | {self.target.shape=}")
+        except AttributeError as ae:
+            print(f"TM:Tensor:full_resolution:err: AttributeError: {ae}")
+        except Exception as e:
+            print(f"TM:Tensor:full_resolution:err: {e}")
+            print(f"TM:Tensor:full_resolution:err:{tm_line}: {type(self.source)} | {type(self.target)}")
         e_t = time.time()
         self.total_registration_time = e_t - b_t
         if self.logging_path is not None:
             self.logger.info(f"Total registration time: {self.total_registration_time} seconds.")
         self.save_final()
+        print(f"LOG - DHR - FullRes - Save final registration result done at {datetime.datetime.now()}")
