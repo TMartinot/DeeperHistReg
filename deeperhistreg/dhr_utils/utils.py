@@ -63,7 +63,7 @@ def resample(tensor : tc.Tensor, resample_ratio : float, mode: str="bilinear") -
     """
     return F.interpolate(tensor, scale_factor = 1 / resample_ratio, mode=mode, recompute_scale_factor=False, align_corners=False)
 
-def resample_tensor_to_size(tensor: tc.Tensor, new_size: tc.Tensor, mode: str='bilinear') -> tc.Tensor:
+def resample_tensor_to_size(tensor: tc.Tensor, new_size: Union[int, Tuple[int, ...], tc.Tensor], mode: str='bilinear') -> tc.Tensor:
     """
     TODO
     """
@@ -75,7 +75,7 @@ def resample_displacement_field(displacement_field : tc.Tensor, resample_ratio :
     """
     return F.interpolate(displacement_field.permute(0, 3, 1, 2), scale_factor = 1 / resample_ratio, mode=mode, recompute_scale_factor=False, align_corners=False).permute(0, 2, 3, 1)
 
-def resample_displacement_field_to_size(displacement_field: tc.Tensor, new_size: tc.Tensor, mode: str='bilinear') -> tc.Tensor:
+def resample_displacement_field_to_size(displacement_field: tc.Tensor, new_size: Union[int, Tuple[int, ...], tc.Tensor], mode: str='bilinear') -> tc.Tensor:
     """
     TODO
     """

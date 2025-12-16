@@ -35,9 +35,10 @@ def basic_preprocessing(
         initial_resolution = params['initial_resolution']
         source_y_size, source_x_size, target_y_size, target_x_size = u.get_combined_size(source, target)
         initial_resample_ratio = u.calculate_resampling_ratio((source_x_size, target_x_size), (source_y_size, target_y_size), initial_resolution)
+        resample_dim = (round(target_y_size * (1 / initial_resample_ratio)), round(target_x_size * (1 / initial_resample_ratio)))
         initial_smoothing = max(initial_resample_ratio - 1, 0.1)
-        source = u.resample(u.gaussian_smoothing(source, initial_smoothing), initial_resample_ratio)
-        target = u.resample(u.gaussian_smoothing(target, initial_smoothing), initial_resample_ratio)
+        source = u.resample_tensor_to_size(u.gaussian_smoothing(source, initial_smoothing), resample_dim)
+        target = u.resample_tensor_to_size(u.gaussian_smoothing(target, initial_smoothing), resample_dim)
         postprocessing_params['initial_resample_ratio'] = initial_resample_ratio
         if source_landmarks is not None:
             source_landmarks = source_landmarks / initial_resample_ratio
