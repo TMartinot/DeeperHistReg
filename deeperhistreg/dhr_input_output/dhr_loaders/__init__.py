@@ -1,4 +1,5 @@
 from .openslide_loader import OpenSlideLoader
+from .openslide_native_loader import OpenSlideNativeLoader
 from .sitk_loader import SITKLoader
 from .tiff_loader import TIFFLoader
 from .vips_loader import VIPSLoader

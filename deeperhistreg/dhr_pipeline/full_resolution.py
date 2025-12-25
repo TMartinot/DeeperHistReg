@@ -24,6 +24,7 @@ from dhr_input_output.dhr_loaders import tiff_loader
 from dhr_input_output.dhr_loaders import vips_loader
 from dhr_input_output.dhr_loaders import pil_loader
 from dhr_input_output.dhr_loaders import openslide_loader
+from dhr_input_output.dhr_loaders import openslide_native_loader
 from dhr_input_output.dhr_loaders import pair_full_loader
 
 from dhr_input_output.dhr_savers import pil_saver
@@ -36,7 +37,8 @@ loader_mapper = {
     'tiff' : tiff_loader.TIFFLoader,
     'vips' : vips_loader.VIPSLoader,
     'pil' : pil_loader.PILLoader,
-    'openslide' : openslide_loader.OpenSlideLoader
+    'openslide' : openslide_loader.OpenSlideLoader,
+    'openslide-native' : openslide_native_loader.OpenSlideNativeLoader
 }
     
 saver_mapper = {
